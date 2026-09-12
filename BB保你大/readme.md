@@ -1,542 +1,647 @@
-# BB保你大 — AI Remaster Workflow
+# BB保你大 — AI Remaster
 
-Documented workflow used to AI-remaster the 52-episode Cantonese-dubbed series **BB保你大**.
+AI restoration and preservation workflow for the 52-episode Cantonese-dubbed animation series **BB保你大**.
 
-The objective was to preserve the original audio and frame rate while improving the SD video using Real-ESRGAN and producing high-quality 1080p 4:3 HEVC masters.
+The project uses **Real-ESRGAN** and **FFmpeg** to restore the original SD material while preserving the original 4:3 presentation, frame rate, and Cantonese audio.
+
+The completed primary remaster is stored as **1440×1080 HEVC/H.265**.
+
+> [!IMPORTANT]
+> This repository contains **scripts, technical documentation, and restoration methodology only**.
+>
+> It does **not** contain or redistribute the original episodes, remastered episodes, copyrighted video, or copyrighted audio.
+>
+> Users must provide their own source media and are responsible for ensuring that their use of the material complies with applicable copyright law and any relevant licences or permissions.
 
 ---
 
-## Final Remaster Specification
+## Source Material
 
-| Property | Value |
+The SD source files used for this project were obtained from:
+
+### HKAnime — BB保你大 (粵語版) | 全集完 共52集
+
+[View the source page on HKAnime](https://www.hkanime.com/play/BB%E4%BF%9D%E4%BD%A0%E5%A4%A7/582)
+
+The source collection contains **52 Cantonese-dubbed episodes**.
+
+Observed technical characteristics of the source material:
+
+| Property | Source |
 |---|---|
-| Source | SD |
-| Typical source resolution | 640×480 |
-| Final resolution | 1440×1080 |
-| Aspect ratio | 4:3 |
-| Frame rate | Original frame rate preserved, typically 24 fps |
-| AI model | Real-ESRGAN `realesr-animevideov3` |
-| AI upscale | 4× |
-| AI intermediate | Typically 2560×1920 |
-| Downscale | Lanczos |
-| Final codec | HEVC / H.265 |
+| Episodes | 52 |
+| Resolution | Typically `640×480` |
+| Aspect Ratio | 4:3 |
+| Frame Rate | Typically 24 fps |
+| Video | H.264 |
+| Pixel Format | yuv420p |
+| Audio | AAC Stereo |
+| Audio Sample Rate | 48 kHz |
+| Language | Cantonese |
+
+Some individual source files differ slightly from the typical specification.
+
+The processing scripts therefore use **FFprobe** to inspect source properties rather than assuming that every episode is identical.
+
+> [!NOTE]
+> The original SD files are considered the preservation source for this project.
+>
+> Future 2K, 4K, or 8K versions should be regenerated from the original SD material rather than from an already-remastered version.
+
+---
+
+# Primary AI Remaster
+
+The primary completed edition of **BB保你大** uses the following specification:
+
+| Property | Remaster |
+|---|---|
+| Source | Original SD |
+| Typical Source Resolution | `640×480` |
+| AI Model | `realesr-animevideov3` |
+| AI Scale | 4× |
+| Typical AI Intermediate | `2560×1920` |
+| Final Resolution | `1440×1080` |
+| Aspect Ratio | 4:3 |
+| Frame Rate | Original preserved |
+| Frame Interpolation | None |
+| Final Video Codec | HEVC / H.265 |
 | Encoder | x265 |
-| Preset | Slow |
 | CRF | 20 |
-| Pixel format | yuv420p |
-| Audio | Original AAC |
-| Audio language | Cantonese (`yue`) |
-| Audio re-encoding | None |
-| Frame interpolation | None |
-| Remaster year | 2026 |
+| Preset | slow |
+| Pixel Format | yuv420p |
+| Downscaling | Lanczos |
+| Audio | Original Cantonese AAC |
+| Audio Re-encoding | None |
+| Audio Language Tag | `yue` |
+| Remaster Year | 2026 |
 
-The original video frames are extracted losslessly to PNG, processed through Real-ESRGAN, downscaled to 1440×1080, and encoded with x265.
+The typical processing chain is:
 
-The original Cantonese AAC audio is stream-copied into the remastered MKV without re-encoding.
+```text
+Original SD
+640×480
+    │
+    ▼
+Lossless PNG extraction
+    │
+    ▼
+Real-ESRGAN
+realesr-animevideov3 ×4
+    │
+    ▼
+2560×1920
+AI intermediate
+    │
+    ▼
+Lanczos downscale
+    │
+    ▼
+1440×1080
+4:3
+    │
+    ▼
+HEVC / x265
+CRF 20 / preset slow
+    │
+    ├── Original frame rate preserved
+    └── Original Cantonese AAC preserved
+```
+
+No frame interpolation is performed.
+
+The source is **not stretched to 16:9**.
 
 ---
 
-# Requirements
+# Why 1440×1080?
 
-The workflow assumes the following are installed and available:
+The original material is 4:3.
 
-- FFmpeg
-- FFprobe
-- Real-ESRGAN NCNN Vulkan
-- PowerShell
-- Sufficient temporary storage
-
-Real-ESRGAN was installed at:
+A 4:3 image with a height of 1080 pixels has a width of:
 
 ```text
-C:\Real-ESRGAN
+1440×1080
 ```
 
-The following model was used:
+Using `1920×1080` as the active image would require stretching or otherwise altering the original presentation.
+
+Instead, the remaster remains:
 
 ```text
-realesr-animevideov3
+1440×1080
 ```
 
-Available model files included:
-
-```text
-realesr-animevideov3-x2
-realesr-animevideov3-x3
-realesr-animevideov3-x4
-realesrgan-x4plus-anime
-realesrgan-x4plus
-```
+Players such as Plex and Jellyfin can pillarbox the image appropriately when displayed on a 16:9 screen.
 
 ---
 
-# Temporary Storage Requirements
+# Restoration Philosophy
 
-The frame-based workflow uses a large amount of temporary storage.
+The purpose of this workflow is to improve the presentation of the available SD material without unnecessarily altering its original characteristics.
 
-For a typical ~20-minute episode:
+The primary remaster therefore preserves:
 
-```text
-Source frames:
-~29,500 PNG files
-~5.9 GB
+- original 4:3 framing
+- original frame rate
+- original Cantonese audio
+- original episode timing
 
-AI-upscaled frames:
-~29,500 PNG files
-~114 GB
+The workflow does **not** intentionally perform:
 
-Expected temporary working space:
-~120–125 GB
-```
+- 16:9 stretching
+- cropping to widescreen
+- 60 fps conversion
+- motion interpolation
+- audio replacement
+- audio re-encoding
 
-A minimum free-space threshold of:
-
-```text
-160 GB
-```
-
-is therefore used before starting each episode.
-
-Temporary frames are deleted after each episode completes successfully.
+AI processing is applied to the image frames only.
 
 ---
 
-# Starting the AI Remaster Job
+# Scripts
 
-Update these paths as required:
+The project contains four scripts for the completed 1080p workflow.
+
+```text
+01-Upscale.ps1
+02-Metadata.ps1
+03-SHA256.ps1
+04-Verify-SHA256.ps1
+```
+
+## `01-Upscale.ps1`
+
+Main restoration pipeline.
+
+It performs:
+
+```text
+FFprobe source inspection
+        ↓
+Lossless PNG extraction
+        ↓
+Real-ESRGAN ×4
+        ↓
+Frame-count verification
+        ↓
+Lanczos resize to 1440×1080
+        ↓
+HEVC / x265 CRF 20
+        ↓
+Original Cantonese AAC stream copy
+        ↓
+FFprobe verification
+        ↓
+Temporary frame cleanup
+```
+
+Example:
 
 ```powershell
-$SourceDir = "C:\Users\Synice\Downloads\BB保你大"
-$OutputDir = "C:\Users\Synice\Downloads\BB保你大\Upscaled"
-$WorkRoot = "C:\Real-ESRGAN\batch-work"
-$RealESRGAN = "C:\Real-ESRGAN\realesrgan-ncnn-vulkan.exe"
-
-$MinimumFreeGB = 160
-$StartEpisode = 1
-
-New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
-New-Item -ItemType Directory -Force -Path $WorkRoot | Out-Null
-
-$Files = Get-ChildItem $SourceDir -Filter "*.mp4" |
-    Where-Object {
-        if ($_.BaseName -match '^(\d+)-') {
-            [int]$matches[1] -ge $StartEpisode
-        } else {
-            $false
-        }
-    } |
-    Sort-Object {
-        if ($_.BaseName -match '^(\d+)-') {
-            [int]$matches[1]
-        } else {
-            9999
-        }
-    }
-
-foreach ($File in $Files) {
-
-    if ($File.BaseName -match '^(\d+)-') {
-        $Episode = [int]$matches[1]
-    }
-    else {
-        continue
-    }
-
-    $EpisodeTag = "EP{0:D2}" -f $Episode
-
-    $EpisodeWork = Join-Path $WorkRoot $EpisodeTag
-    $Frames = Join-Path $EpisodeWork "frames"
-    $Upscaled = Join-Path $EpisodeWork "upscaled"
-    $OutputFile = Join-Path $OutputDir "$EpisodeTag-1080p.mkv"
-
-    Write-Host ""
-    Write-Host "============================================"
-    Write-Host " Processing $EpisodeTag"
-    Write-Host " $($File.Name)"
-    Write-Host "============================================"
-    Write-Host ""
-
-    #
-    # Restart behaviour
-    #
-    # The selected StartEpisode is treated as a fresh restart point.
-    # Any incomplete temporary files and output for that episode are removed.
-    #
-
-    if ($Episode -eq $StartEpisode) {
-        Remove-Item $EpisodeWork -Recurse -Force -ErrorAction SilentlyContinue
-        Remove-Item $OutputFile -Force -ErrorAction SilentlyContinue
-    }
-    elseif (Test-Path $OutputFile) {
-        Write-Host "$EpisodeTag already exists. Skipping."
-        continue
-    }
-
-    #
-    # Free-space check
-    #
-
-    $FreeGB = [math]::Round((Get-PSDrive C).Free / 1GB, 2)
-
-    Write-Host "C: free space: $FreeGB GB"
-
-    if ($FreeGB -lt $MinimumFreeGB) {
-        Write-Error "$EpisodeTag NOT STARTED - only $FreeGB GB free. Minimum is $MinimumFreeGB GB."
-        break
-    }
-
-    #
-    # Prepare temporary directories
-    #
-
-    Remove-Item $EpisodeWork -Recurse -Force -ErrorAction SilentlyContinue
-
-    New-Item -ItemType Directory -Force -Path $Frames | Out-Null
-    New-Item -ItemType Directory -Force -Path $Upscaled | Out-Null
-
-    #
-    # Detect source frame rate
-    #
-
-    $FrameRateRaw = ffprobe `
-        -v error `
-        -select_streams v:0 `
-        -show_entries stream=avg_frame_rate `
-        -of default=noprint_wrappers=1:nokey=1 `
-        "$($File.FullName)"
-
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($FrameRateRaw)) {
-        Write-Error "Could not detect frame rate for $EpisodeTag"
-        break
-    }
-
-    Write-Host "Detected FPS: $FrameRateRaw"
-
-    #
-    # Extract source video frames losslessly
-    #
-
-    Write-Host ""
-    Write-Host "Extracting frames..."
-
-    ffmpeg `
-        -hide_banner `
-        -i "$($File.FullName)" `
-        -map 0:v:0 `
-        -fps_mode passthrough `
-        "$Frames\frame_%08d.png"
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Frame extraction failed for $EpisodeTag"
-        break
-    }
-
-    $FrameCount = (Get-ChildItem "$Frames\*.png").Count
-
-    Write-Host "Extracted $FrameCount frames."
-
-    #
-    # AI upscale using Real-ESRGAN
-    #
-
-    Write-Host ""
-    Write-Host "AI upscaling with realesr-animevideov3..."
-
-    & $RealESRGAN `
-        -i "$Frames" `
-        -o "$Upscaled" `
-        -n realesr-animevideov3 `
-        -s 4 `
-        -f png
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Real-ESRGAN failed for $EpisodeTag"
-        break
-    }
-
-    $UpscaledCount = (Get-ChildItem "$Upscaled\*.png").Count
-
-    Write-Host "Upscaled $UpscaledCount frames."
-
-    if ($UpscaledCount -ne $FrameCount) {
-        Write-Error "$EpisodeTag frame-count mismatch. Source=$FrameCount Upscaled=$UpscaledCount"
-        break
-    }
-
-    #
-    # Encode final 1440×1080 HEVC video
-    #
-
-    Write-Host ""
-    Write-Host "Encoding 1440x1080 HEVC..."
-
-    ffmpeg `
-        -hide_banner `
-        -framerate "$FrameRateRaw" `
-        -i "$Upscaled\frame_%08d.png" `
-        -i "$($File.FullName)" `
-        -map 0:v:0 `
-        -map 1:a? `
-        -map_metadata 1 `
-        -vf "scale=1440:1080:flags=lanczos,setsar=1" `
-        -c:v libx265 `
-        -preset slow `
-        -crf 20 `
-        -pix_fmt yuv420p `
-        -c:a copy `
-        -metadata:s:a:0 language=yue `
-        -metadata:s:a:0 title="Cantonese" `
-        -shortest `
-        "$OutputFile"
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Encoding failed for $EpisodeTag"
-        break
-    }
-
-    #
-    # Verify output
-    #
-
-    Write-Host ""
-    Write-Host "Verifying output..."
-
-    ffprobe `
-        -v error `
-        -show_entries "stream=index,codec_name,codec_type,width,height,avg_frame_rate,pix_fmt:stream_tags=language,title:format=duration,size,bit_rate" `
-        -of default=noprint_wrappers=1 `
-        "$OutputFile"
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Output verification failed for $EpisodeTag"
-        break
-    }
-
-    #
-    # Cleanup temporary frames
-    #
-
-    Write-Host ""
-    Write-Host "Cleaning temporary frames..."
-
-    Remove-Item $EpisodeWork -Recurse -Force
-
-    Write-Host ""
-    Write-Host "$EpisodeTag COMPLETE"
-    Write-Host "Output: $OutputFile"
-}
-
-Write-Host ""
-Write-Host "============================================"
-Write-Host " Batch processing finished"
-Write-Host "============================================"
+.\01-Upscale.ps1 `
+    -SourceDir "D:\Anime\BB保你大" `
+    -RealESRGANDir "C:\Real-ESRGAN"
 ```
 
----
+The output files are:
 
-# Restarting After an Interrupted Job
+```text
+EP01-1080p.mkv
+EP02-1080p.mkv
+...
+EP52-1080p.mkv
+```
 
-Set:
+### Restarting
+
+If processing is interrupted, use:
 
 ```powershell
-$StartEpisode = 42
+-StartEpisode
 ```
 
-for example, to restart from episode 42.
+For example:
 
-The script will delete temporary and incomplete output belonging to the selected starting episode, then continue processing episodes after it.
+```powershell
+.\01-Upscale.ps1 `
+    -SourceDir "D:\Anime\BB保你大" `
+    -RealESRGANDir "C:\Real-ESRGAN" `
+    -StartEpisode 42
+```
 
-Completed episodes before `$StartEpisode` are not touched.
-
-> **Important:** Do not set `$StartEpisode` to an already completed episode unless you intend to regenerate that episode.
+> [!WARNING]
+> `StartEpisode` is treated as a fresh restart point.
+>
+> Existing temporary data and output for the selected episode are removed before that episode is regenerated.
 
 ---
 
-# AI Remaster Metadata
+## `02-Metadata.ps1`
 
-After all episodes have been processed successfully, metadata is added in a separate pass.
+Adds the final remaster metadata after processing is complete.
 
-This operation uses:
+Example:
+
+```powershell
+.\02-Metadata.ps1 `
+    -Dir "D:\Anime\BB保你大\Upscaled"
+```
+
+Metadata includes:
+
+```text
+Series:             BB保你大
+Edition:            AI Remastered
+Remaster Year:      2026
+AI Model:           Real-ESRGAN realesr-animevideov3
+AI Scale:           4x
+Output Resolution:  1440x1080
+Video:              HEVC / H.265
+Encoding:           x265 CRF 20 preset slow
+Audio:              Original Cantonese AAC
+Language:           yue
+```
+
+The script uses:
 
 ```text
 -c copy
 ```
 
-so the completed video and audio streams are **not re-encoded**.
+so the existing video and audio streams are **not re-encoded** during the metadata pass.
+
+---
+
+## `03-SHA256.ps1`
+
+Creates an integrity manifest for the completed masters.
+
+Example:
 
 ```powershell
-$Dir = "C:\Users\Synice\Downloads\BB保你大\Upscaled"
-
-$Files = Get-ChildItem $Dir -Filter "EP??-1080p.mkv" |
-    Sort-Object Name
-
-foreach ($File in $Files) {
-
-    if ($File.BaseName -match '^EP(\d+)-1080p$') {
-        $Episode = [int]$matches[1]
-    }
-    else {
-        Write-Warning "Skipping unexpected filename: $($File.Name)"
-        continue
-    }
-
-    $EpisodeTag = "EP{0:D2}" -f $Episode
-    $TempFile = Join-Path $Dir "$EpisodeTag-1080p.metadata-temp.mkv"
-
-    Write-Host ""
-    Write-Host "============================================"
-    Write-Host " Updating metadata for $EpisodeTag"
-    Write-Host "============================================"
-
-    ffmpeg `
-        -hide_banner `
-        -y `
-        -i "$($File.FullName)" `
-        -map 0 `
-        -c copy `
-        -metadata "title=BB保你大 - $EpisodeTag" `
-        -metadata "edition=AI Remastered" `
-        -metadata "remaster_year=2026" `
-        -metadata "ai_model=Real-ESRGAN realesr-animevideov3" `
-        -metadata "ai_scale=4x" `
-        -metadata "output_resolution=1440x1080" `
-        -metadata "remaster_method=AI upscale 4x using realesr-animevideov3, downscaled to 1440x1080 with Lanczos" `
-        -metadata "video_codec=HEVC / H.265" `
-        -metadata "video_encode=x265 CRF 20 preset slow" `
-        -metadata "audio_source=Original Cantonese AAC" `
-        -metadata "comment=AI remastered from the original SD source. Original frame rate and Cantonese audio preserved. No frame interpolation performed." `
-        -metadata:s:a:0 language=yue `
-        -metadata:s:a:0 title="Cantonese" `
-        "$TempFile"
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Metadata remux failed for $EpisodeTag"
-        Remove-Item $TempFile -Force -ErrorAction SilentlyContinue
-        break
-    }
-
-    #
-    # Verify new file
-    #
-
-    ffprobe `
-        -v error `
-        -show_entries "format_tags=title,edition,remaster_year,ai_model,ai_scale,output_resolution,remaster_method,video_codec,video_encode,audio_source,comment:stream=index,codec_name,codec_type,width,height:stream_tags=language,title" `
-        -of default=noprint_wrappers=1 `
-        "$TempFile"
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Verification failed for $EpisodeTag"
-        break
-    }
-
-    #
-    # Replace original only after successful remux
-    #
-
-    Remove-Item "$($File.FullName)" -Force
-    Move-Item "$TempFile" "$($File.FullName)"
-
-    Write-Host "$EpisodeTag metadata updated."
-}
-
-Write-Host ""
-Write-Host "============================================"
-Write-Host " Metadata pass complete"
-Write-Host "============================================"
+.\03-SHA256.ps1 `
+    -Folder "D:\Anime\BB保你大\Upscaled"
 ```
 
----
-
-## Embedded Metadata
-
-Each remastered MKV contains metadata similar to:
+The script creates:
 
 ```text
-Title: BB保你大 - EP01
-Edition: AI Remastered
-Remaster Year: 2026
-AI Model: Real-ESRGAN realesr-animevideov3
-AI Scale: 4x
-Output Resolution: 1440x1080
-Remaster Method: AI upscale 4x using realesr-animevideov3, downscaled to 1440x1080 with Lanczos
-Video Codec: HEVC / H.265
-Video Encode: x265 CRF 20 preset slow
-Audio Source: Original Cantonese AAC
-Audio Language: yue
-Audio Title: Cantonese
+SHA256SUMS.txt
 ```
+
+containing a SHA-256 digest for every episode.
+
+> [!IMPORTANT]
+> Generate the SHA-256 manifest **after all metadata modifications are complete**.
+>
+> Changing MKV metadata changes the file itself and therefore changes its SHA-256 digest.
 
 ---
 
-# SHA-256 Integrity Manifest
+## `04-Verify-SHA256.ps1`
 
-After all metadata changes are complete, SHA-256 hashes are generated for the final files.
+Checks archived files against `SHA256SUMS.txt`.
 
-**Generate hashes only after the metadata pass.**
-
-Changing MKV metadata changes the file contents and therefore changes the SHA-256 hash.
-
-Set the final archive directory:
+Example:
 
 ```powershell
-$Folder = "C:\Users\Synice\OneDrive\HK-Anime\BB保你大"
-$Manifest = Join-Path $Folder "SHA256SUMS.txt"
-
-$Files = Get-ChildItem $Folder -Filter "EP*-1080p.mkv" |
-    Sort-Object {
-        if ($_.BaseName -match '^EP(\d+)') {
-            [int]$matches[1]
-        } else {
-            9999
-        }
-    }
-
-if ($Files.Count -ne 52) {
-    Write-Warning "Expected 52 episodes but found $($Files.Count)."
-}
-
-$Lines = foreach ($File in $Files) {
-
-    Write-Host "Hashing $($File.Name)..."
-
-    $Hash = Get-FileHash $File.FullName -Algorithm SHA256
-
-    "$($Hash.Hash.ToLower()) *$($File.Name)"
-}
-
-$Lines | Set-Content $Manifest -Encoding UTF8
-
-Write-Host ""
-Write-Host "Done."
-Write-Host "Hashed $($Files.Count) files."
-Write-Host "Manifest: $Manifest"
+.\04-Verify-SHA256.ps1 `
+    -Folder "D:\Archive\BB保你大"
 ```
 
-The resulting manifest has the format:
+A successful archive should report:
 
 ```text
-<sha256> *EP01-1080p.mkv
-<sha256> *EP02-1080p.mkv
-<sha256> *EP03-1080p.mkv
-...
-<sha256> *EP52-1080p.mkv
+PASSED:  52
+FAILED:  0
+MISSING: 0
+
+All files passed SHA-256 verification.
 ```
 
-The SHA-256 manifest allows archived or cloud-stored files to be checked later for byte-for-byte integrity.
+A matching SHA-256 confirms that the current MKV is byte-for-byte identical to the file originally hashed.
 
 ---
 
-# Archive Layout
+# Complete Workflow
 
-Example final archive:
+The intended order is:
+
+```text
+Original SD episodes
+        │
+        ▼
+01-Upscale.ps1
+        │
+        ▼
+1440×1080 AI remasters
+        │
+        ▼
+02-Metadata.ps1
+        │
+        ▼
+Final masters
+        │
+        ▼
+03-SHA256.ps1
+        │
+        ▼
+SHA256SUMS.txt
+        │
+        ▼
+Archive / Backup
+        │
+        ▼
+04-Verify-SHA256.ps1
+        │
+        ▼
+Integrity confirmed
+```
+
+For detailed operating instructions see:
+
+**[USAGE.md](./USAGE.md)**
+
+---
+
+# Temporary Storage Requirements
+
+The workflow extracts every video frame to lossless PNG before processing.
+
+During testing, a typical approximately 20-minute episode produced roughly:
+
+```text
+Source PNG frames:       ~6 GB
+AI-upscaled PNG frames: ~114 GB
+```
+
+Peak temporary storage can therefore exceed:
+
+```text
+120 GB per episode
+```
+
+The default workflow requires at least:
+
+```text
+160 GB free
+```
+
+before beginning another episode.
+
+Temporary data is reused and removed after each successful episode, so this requirement is **per episode**, not 120 GB × 52.
+
+---
+
+# Real-ESRGAN
+
+This workflow uses **Real-ESRGAN**, specifically:
+
+```text
+realesr-animevideov3
+```
+
+at:
+
+```text
+4× AI scale
+```
+
+Real-ESRGAN is developed separately from this repository.
+
+### Official Resources
+
+- **GitHub:** [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN/)
+- **Research Paper:** [Real-ESRGAN: Training Real-World Blind Super-Resolution with Pure Synthetic Data](https://arxiv.org/abs/2107.10833)
+
+Real-ESRGAN binaries and pretrained model files are **not distributed by this repository**.
+
+Refer to the official upstream project for:
+
+- downloads
+- pretrained models
+- licensing
+- installation
+- current documentation
+
+A local reference to the Real-ESRGAN NCNN Vulkan workflow is also available in this repository:
+
+**[Real-ESRGAN Documentation](../Real-ESRGAN/)**
+
+---
+
+# Future Higher-Resolution Remasters
+
+The current recommended archival master is:
+
+```text
+1440×1080
+```
+
+Possible future experimental editions include:
+
+| Edition | Resolution | Aspect Ratio |
+|---|---:|---:|
+| Current 1080p | `1440×1080` | 4:3 |
+| 2K | `2048×1536` | 4:3 |
+| 4K | `2880×2160` | 4:3 |
+| 8K | `5760×4320` | 4:3 |
+
+These resolutions deliberately preserve the original 4:3 presentation.
+
+> [!IMPORTANT]
+> Higher-resolution editions should be generated directly from the **original SD source**, not from the existing 1080p remaster.
+
+The preferred relationship is:
+
+```text
+                     ┌──> 1440×1080
+                     │
+                     ├──> 2048×1536
+Original SD ─────────┼──> 2880×2160
+                     │
+                     └──> 5760×4320
+```
+
+Not:
+
+```text
+Original SD
+    ↓
+1080p
+    ↓
+2K
+    ↓
+4K
+    ↓
+8K
+```
+
+This avoids repeatedly processing AI-generated detail and previously encoded video.
+
+---
+
+# Experimental Higher-Resolution Script
+
+Future higher-resolution testing uses:
+
+```text
+experimental/Upscale-HigherResolution.ps1
+```
+
+The script accepts:
+
+```powershell
+-Target 2K
+```
+
+```powershell
+-Target 4K
+```
+
+or:
+
+```powershell
+-Target 8K
+```
+
+For example:
+
+### 2K
+
+```powershell
+.\Upscale-HigherResolution.ps1 `
+    -SourceDir "D:\Anime\BB保你大" `
+    -RealESRGANDir "C:\Real-ESRGAN" `
+    -Target 2K
+```
+
+Output:
+
+```text
+2048×1536
+```
+
+### 4K
+
+```powershell
+.\Upscale-HigherResolution.ps1 `
+    -SourceDir "D:\Anime\BB保你大" `
+    -RealESRGANDir "C:\Real-ESRGAN" `
+    -Target 4K
+```
+
+Output:
+
+```text
+2880×2160
+```
+
+### 8K
+
+```powershell
+.\Upscale-HigherResolution.ps1 `
+    -SourceDir "D:\Anime\BB保你大" `
+    -RealESRGANDir "C:\Real-ESRGAN" `
+    -Target 8K
+```
+
+Output:
+
+```text
+5760×4320
+```
+
+> [!WARNING]
+> The 2K, 4K, and particularly 8K workflows are experimental.
+>
+> Increasing output resolution does not recover genuine native detail that was absent from the original SD source.
+>
+> 4K and 8K should therefore be evaluated visually before processing the complete 52-episode collection.
+
+See:
+
+**[FUTURE-UPSCALING.md](./FUTURE-UPSCALING.md)**
+
+for the full higher-resolution strategy and usage instructions.
+
+---
+
+# Source Policy
+
+The original SD files should be retained wherever possible.
+
+They are the closest available source material for future restoration work.
+
+The conceptual archive structure is:
+
+```text
+BB保你大
+│
+├── Original SD
+│
+├── 1080p AI Remaster
+│
+├── Future 2K Remaster
+│
+├── Future 4K Remaster
+│
+└── Future 8K Remaster
+```
+
+Every remaster should independently originate from:
+
+```text
+Original SD
+```
+
+rather than another remaster.
+
+This also means that future improvements to AI restoration technology can be tested without inheriting artifacts from the current Real-ESRGAN generation.
+
+---
+
+# Why Keep the Original SD Source?
+
+The 1080p remaster contains pixels generated or reconstructed by the AI model.
+
+Although the remaster may look substantially better, it is not a replacement for the original source from a preservation perspective.
+
+Keeping the SD material allows a future workflow to use:
+
+```text
+Original SD
+    ↓
+New / improved restoration model
+    ↓
+New master
+```
+
+instead of:
+
+```text
+Old AI remaster
+    ↓
+New AI model
+    ↓
+Second-generation AI remaster
+```
+
+The original should therefore be retained alongside the remastered masters whenever possible.
+
+---
+
+# Archive Integrity
+
+The recommended preservation set consists of:
 
 ```text
 BB保你大/
 │
 ├── EP01-1080p.mkv
 ├── EP02-1080p.mkv
-├── EP03-1080p.mkv
 ├── ...
 ├── EP52-1080p.mkv
 │
@@ -544,59 +649,129 @@ BB保你大/
 └── SHA256SUMS.txt
 ```
 
----
+The SHA-256 manifest allows the masters to be verified after:
 
-# Preservation Notes
+- cloud storage
+- copying between disks
+- backup restoration
+- long-term archival
+- downloading from OneDrive
+- migration to new storage
 
-The remaster deliberately preserves:
-
-- original frame rate
-- original Cantonese audio
-- original audio codec
-- original temporal structure
-- original 4:3 presentation
-
-The workflow does **not** use:
-
-- frame interpolation
-- artificial 60 fps conversion
-- audio enhancement/re-encoding
-- 16:9 stretching
-- cropping to widescreen
-
-The resulting `1440×1080` files retain the original **4:3 aspect ratio**.
+Filesystem timestamps should not be used as an integrity mechanism.
 
 ---
 
-# Storage / Cloud Archival
+# Plex / Jellyfin
 
-The completed master files may be stored on OneDrive or other cloud storage.
+The remastered files are suitable for use with media servers such as Plex or Jellyfin.
 
-SHA-256 hashes verify the actual file contents, including:
+The active video remains:
 
-- video
-- audio
-- MKV structure
-- embedded metadata
+```text
+1440×1080
+4:3
+```
 
-Cloud or filesystem attributes such as:
+A 16:9 display should pillarbox the image during playback rather than stretching it.
 
-- Windows creation time
-- local file attributes
-- OneDrive online/offline state
+The high-quality master also provides a better source if Plex or Jellyfin needs to transcode the video for a particular client or network connection.
 
-are not used as integrity indicators.
+---
 
-If the SHA-256 hash matches the value in `SHA256SUMS.txt`, the file is effectively verified as byte-for-byte identical to the archived master.
+# Repository Layout
 
-## Future Higher-Resolution Remasters
+Recommended project structure:
 
-The current archival master is `1440x1080` 4:3.
+```text
+ai-upscale/
+│
+├── README.md
+├── Scan-Videos.ps1
+│
+├── Real-ESRGAN/
+│   └── README.md
+│
+└── BB保你大/
+    │
+    ├── README.md
+    ├── USAGE.md
+    ├── FUTURE-UPSCALING.md
+    │
+    ├── 01-Upscale.ps1
+    ├── 02-Metadata.ps1
+    ├── 03-SHA256.ps1
+    ├── 04-Verify-SHA256.ps1
+    │
+    └── experimental/
+        └── Upscale-HigherResolution.ps1
+```
 
-Possible future experiments include:
+The completed 1080p scripts are kept separate from experimental future-resolution workflows.
 
-- `2048x1536` — 2K 4:3
-- `2880x2160` — 4K 4:3
-- `5760x4320` — 8K 4:3
+---
 
-See [FUTURE-UPSCALING.md](./FUTURE-UPSCALING.md) for proposed workflows, storage considerations, and preservation recommendations.
+# Project Scope
+
+This repository is intended to document:
+
+- source analysis
+- AI restoration methodology
+- FFmpeg processing
+- Real-ESRGAN processing
+- frame-rate preservation
+- aspect-ratio preservation
+- audio preservation
+- remaster metadata
+- archive integrity verification
+- future restoration experiments
+
+It is **not a distribution repository for the programme itself**.
+
+---
+
+# Disclaimer & Attribution
+
+This project is an independent technical restoration, preservation, and documentation project.
+
+**BB保你大**, its animation, characters, video, Cantonese audio, programme artwork, trademarks, and other underlying copyrighted material remain the property of their respective rights holders.
+
+No ownership of the underlying programme content is claimed by this repository or its maintainer.
+
+The presence of a source URL in this documentation is provided for **source provenance and reproducibility of the technical workflow**. It does not represent a claim regarding ownership, licensing status, or redistribution rights of material hosted by a third party.
+
+This repository does not include the source episodes or completed remastered episodes.
+
+The scripts and documentation are provided for lawful personal preservation, research, technical experimentation, and other uses permitted by applicable law.
+
+Users of these scripts are responsible for ensuring that they have the appropriate rights or permissions for the media they process.
+
+---
+
+## Credits
+
+### Real-ESRGAN
+
+Real-ESRGAN is developed by the upstream Real-ESRGAN project.
+
+**GitHub:**  
+[xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN/)
+
+**Paper:**  
+[Real-ESRGAN: Training Real-World Blind Super-Resolution with Pure Synthetic Data](https://arxiv.org/abs/2107.10833)
+
+### FFmpeg
+
+Video extraction, encoding, stream copying, metadata handling, and media inspection in this workflow use **FFmpeg** and **FFprobe**.
+
+---
+
+## Documentation
+
+- **[Usage Guide](./USAGE.md)** — complete instructions for the four primary PowerShell scripts
+- **[Future Upscaling](./FUTURE-UPSCALING.md)** — experimental 2K, 4K, and 8K strategy
+- **[Real-ESRGAN Reference](../Real-ESRGAN/)** — local Real-ESRGAN reference documentation
+
+---
+
+**Primary Remaster:** `1440×1080` · 4:3 · HEVC/H.265 · 24 fps source timing preserved · Original Cantonese AAC · Real-ESRGAN AnimeVideoV3 ×4 · 2026
