@@ -588,3 +588,15 @@ Cloud or filesystem attributes such as:
 are not used as integrity indicators.
 
 If the SHA-256 hash matches the value in `SHA256SUMS.txt`, the file is effectively verified as byte-for-byte identical to the archived master.
+
+## Future Higher-Resolution Remasters
+
+The current archival master is `1440x1080` 4:3.
+
+Possible future experiments include:
+
+- `2048x1536` — 2K 4:3
+- `2880x2160` — 4K 4:3
+- `5760x4320` — 8K 4:3
+
+See [FUTURE-UPSCALING.md](./FUTURE-UPSCALING.md) for proposed workflows, storage considerations, and preservation recommendations.
