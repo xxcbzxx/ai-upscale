@@ -61,7 +61,7 @@ The completed primary edition of **BB保你大** uses the following specificatio
 
 | Property | Remaster |
 |---|---|
-| Source | Original SD |
+| Source | Best Available SD Source |
 | Typical Source Resolution | `640×480` |
 | AI Model | `realesr-animevideov3` |
 | AI Scale | 4× |
