@@ -732,20 +732,143 @@ It is **not a distribution repository for the programme itself**.
 
 # Disclaimer & Attribution
 
-This project is an independent technical restoration, preservation, and documentation project.
+This repository documents an independent technical video restoration, AI upscaling, and preservation workflow using tools such as Real-ESRGAN and FFmpeg.
 
-**BB保你大**, its animation, characters, video, Cantonese audio, programme artwork, trademarks, and other underlying copyrighted material remain the property of their respective rights holders.
+**BB保你大**, including its animation, characters, video, Cantonese audio, programme artwork, trademarks, and other underlying copyrighted material, remains the property of its respective rights holders.
 
-No ownership of the underlying programme content is claimed by this repository or its maintainer.
+No ownership of the underlying programme or its copyrighted content is claimed by this repository or its maintainer.
 
-The presence of a source URL in this documentation is provided for **source provenance and reproducibility of the technical workflow**. It does not represent a claim regarding ownership, licensing status, or redistribution rights of material hosted by a third party.
+## Source Provenance
 
-This repository does not include the source episodes or completed remastered episodes.
+The SD source material used during the development and testing of this workflow was obtained from publicly accessible online material:
 
-The scripts and documentation are provided for lawful personal preservation, research, technical experimentation, and other uses permitted by applicable law.
+**HKAnime — BB保你大 (粵語版) | 全集完 共52集**
 
-Users of these scripts are responsible for ensuring that they have the appropriate rights or permissions for the media they process.
+[HKAnime source page](https://www.hkanime.com/play/BB%E4%BF%9D%E4%BD%A0%E5%A4%A7/582)
 
+This source URL is included for **source provenance and technical documentation purposes only**. It records the origin of the particular SD files used while developing this restoration workflow.
+
+The availability of material on a publicly accessible website does not necessarily grant permission to reproduce, modify, distribute, or otherwise use copyrighted material.
+
+The inclusion of this URL does not represent a claim regarding the ownership, copyright status, licensing status, legality, authorization, or redistribution rights of material hosted by that third party.
+
+## Repository Content
+
+This repository contains only:
+
+- PowerShell scripts
+- configuration examples
+- technical documentation
+- restoration methodology
+- media-analysis tools and examples
+- integrity-verification tools
+
+This repository does **not** contain or distribute:
+
+- original episodes of **BB保你大**
+- remastered episodes
+- extracted video frames from the programme
+- original or remastered audio
+- downloadable copies of the source media
+
+No original or remastered episodes are made publicly available through this repository.
+
+The purpose of publishing this repository is to document the **technical processing workflow**, not to distribute the media that was processed.
+
+## Use of the Scripts
+
+The scripts contained in this repository are general-purpose media-processing and restoration tools.
+
+They may be used with media for which the user has the appropriate rights, permissions, licences, or other authorization.
+
+Users are responsible for determining whether their acquisition, copying, processing, modification, storage, publication, or distribution of any media complies with applicable law and any relevant licences or permissions.
+
+Nothing in this repository should be interpreted as granting any rights to **BB保你大** or to any other third-party copyrighted material.
+
+## AI Restoration
+
+The remastering process described in this repository uses AI-based image restoration and super-resolution.
+
+AI processing does not change the ownership or copyright status of the underlying source material.
+
+The resulting remastered files are therefore not distributed as part of this repository.
+
+The AI restoration work documented here includes technical operations such as:
+
+- lossless frame extraction
+- AI super-resolution
+- image resizing
+- video reconstruction
+- HEVC/H.265 encoding
+- original frame-rate preservation
+- original aspect-ratio preservation
+- original audio preservation
+- metadata creation
+- SHA-256 integrity verification
+
+## Third-Party Software
+
+This workflow relies on independent third-party software projects.
+
+### Real-ESRGAN
+
+AI super-resolution is performed using **Real-ESRGAN**, specifically the `realesr-animevideov3` model in the primary remaster workflow.
+
+Real-ESRGAN is developed and maintained by its respective upstream project and contributors.
+
+- **Official repository:** [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN/)
+- **Research paper:** [Real-ESRGAN: Training Real-World Blind Super-Resolution with Pure Synthetic Data](https://arxiv.org/abs/2107.10833)
+
+Real-ESRGAN binaries and pretrained model files are not distributed as part of this repository.
+
+Users should obtain Real-ESRGAN and its models from the official upstream project and comply with the applicable upstream licences.
+
+### FFmpeg
+
+**FFmpeg** and **FFprobe** are used throughout the workflow for operations including:
+
+- source inspection
+- frame extraction
+- video encoding
+- audio stream copying
+- resizing
+- metadata handling
+- output verification
+
+FFmpeg is an independent third-party project and is not distributed as part of this repository.
+
+## No Affiliation
+
+This project is an independent technical project.
+
+It is not affiliated with, endorsed by, sponsored by, or officially associated with the creators, producers, broadcasters, distributors, licensors, rights holders, or operators of websites associated with **BB保你大**.
+
+References to third-party projects, websites, programme names, and trademarks are included solely to describe the tools and source material involved in the documented workflow.
+
+## Purpose of the Repository
+
+The purpose of this repository is to document and preserve the technical methodology used during the project, including:
+
+- source video analysis
+- source-quality assessment
+- lossless frame extraction
+- Real-ESRGAN processing
+- AI model selection
+- resolution conversion
+- aspect-ratio preservation
+- frame-rate preservation
+- original audio preservation
+- HEVC/H.265 encoding
+- remaster metadata
+- SHA-256 integrity verification
+- repeatable PowerShell automation
+- experimental higher-resolution restoration workflows
+
+The repository is designed so that the **processing methodology can be studied and reproduced without distributing the media used to develop it**.
+
+---
+
+**In summary:** this repository publishes the restoration tools and methodology, not the programme itself. All rights in the underlying programme and other third-party material remain with their respective rights holders.
 ---
 
 ## Credits
