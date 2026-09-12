@@ -45,10 +45,14 @@ Some individual source files differ slightly from the typical specification.
 The processing scripts therefore use **FFprobe** to inspect source properties rather than assuming that every episode is identical.
 
 > [!NOTE]
-> The original SD files are treated as the preservation source for this project.
+> The provenance of the original broadcast/master material is unknown.
 >
-> Future remasters should be regenerated from the original SD material rather than from an already-remastered version.
-
+> The approximately 480p SD files documented above are the **best available
+> source used by this project** and are retained as the preservation source
+> for future restoration work.
+>
+> These files should not be interpreted as original masters, lossless sources,
+> or first-generation copies.
 ---
 
 # Primary AI Remaster
@@ -742,35 +746,26 @@ for the detailed experimental strategy.
 
 # Source Preservation Policy
 
-The original SD files should be retained wherever possible.
+The approximately 480p SD files used for this project should be retained
+wherever possible.
 
-They are the closest available source material for future restoration work.
+The provenance and generation of the original programme master are currently
+unknown. Therefore, these files are described as the **Best Available SD
+Source**, rather than the "Original SD Source."
 
-A conceptual preservation structure is:
-
-```text
-BB保你大/
-│
-├── Source/
-│   └── Original SD files
-│
-├── Remasters/
-│   ├── 1080p/
-│   ├── 2K/
-│   ├── 4K/
-│   └── 8K/
-│
-└── Documentation/
-```
-
-Every remaster generation should independently originate from:
+Whenever the Best Available SD Source remains available, new remasters should
+preferably be generated directly from it:
 
 ```text
-Original SD
-```
-
-rather than from another remaster.
-
+Best Available SD Source
+        │
+        ├──> 1440×1080 AI Remaster
+        │
+        ├──> 2048×1536 Experimental Remaster
+        │
+        ├──> 2880×2160 Experimental Remaster
+        │
+        └──> 5760×4320 Experimental Remaster
 ---
 
 # Why Keep the Original SD Source?
