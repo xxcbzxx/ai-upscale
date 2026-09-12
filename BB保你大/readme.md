@@ -68,7 +68,7 @@ The completed primary edition of **BB保你大** uses the following specificatio
 | Typical AI Intermediate | `2560×1920` |
 | Final Resolution | `1440×1080` |
 | Aspect Ratio | 4:3 |
-| Frame Rate | Original preserved |
+| Frame Rate | Source frame rate preserved |
 | Frame Interpolation | None |
 | Final Video Codec | HEVC / H.265 |
 | Encoder | x265 |
@@ -76,7 +76,7 @@ The completed primary edition of **BB保你大** uses the following specificatio
 | Preset | slow |
 | Pixel Format | yuv420p |
 | Final Resize | Lanczos |
-| Audio | Original Cantonese AAC |
+| Audio | Source Cantonese AAC preserved |
 | Audio Re-encoding | None |
 | Audio Language Tag | `yue` |
 | Remaster Year | 2026 |
